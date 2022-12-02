@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "deploy-functions-oidc-template"
+version = "1.1.0"
+description = "Cognite Functions template for OIDC projects"
+authors = ["hakon.treider@cognite.com"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pytest-custom-exit-code = "^0, >=0.3"
+cognite-sdk-core = "^2.46"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2"
+pre-commit = "^2.15"
+
+[tool.isort]
+profile = "black"
+force_single_line = false
+atomic = true
+lines_after_imports = 2
+lines_between_types = 1
+line_length = 120
+known_third_party = ["cognite","pytest"]
+
+[tool.black]
+line-length = 120
