@@ -1,6 +1,7 @@
 from typing import Dict, List, Union
 
 import ujson as ujson
+
 from cognite.client.data_classes import TimeSeries
 from requests import Response, Session, adapters  # type: ignore
 
@@ -15,7 +16,7 @@ class IceCreamFactoryAPI:
         self.session.mount("https://", self.adapter)
 
     def get_response(
-            self, headers: Dict[str, str], url_suffix: str, params: Dict[str, Union[str, int, float]] = {}
+        self, headers: Dict[str, str], url_suffix: str, params: Dict[str, Union[str, int, float]] = {}
     ) -> Response:
         """
         Get response from API.
@@ -69,7 +70,7 @@ class IceCreamFactoryAPI:
         return timeseries_list
 
     def get_oee_timeseries_datapoints(
-            self, timeseries_ext_id: str, start: Union[str, int, float], end: Union[str, int, float]
+        self, timeseries_ext_id: str, start: Union[str, int, float], end: Union[str, int, float]
     ):
         """
         Get datapoints for a timeseries external id. This will also return datapoints for an associated timeseries

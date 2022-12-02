@@ -1,18 +1,17 @@
 import argparse
 import logging
 import random
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Event
 from typing import List
 
 from cognite.client import CogniteClient
-from cognite.client.data_classes import DataSet
-from cognite.client.data_classes import TimeSeries
+from cognite.client.data_classes import DataSet, TimeSeries
 from cognite.extractorutils import Extractor
 from cognite.extractorutils.statestore import AbstractStateStore
 from cognite.extractorutils.uploader import TimeSeriesUploadQueue
 from cognite.extractorutils.util import ensure_time_series
-
 from ice_cream_factory_datapoints_extractor.config import IceCreamFactoryConfig
 from ice_cream_factory_datapoints_extractor.datapoints_backfiller import Backfiller
 from ice_cream_factory_datapoints_extractor.datapoints_streamer import Streamer
@@ -20,7 +19,7 @@ from ice_cream_factory_datapoints_extractor.ice_cream_factory_api import IceCrea
 
 
 def timeseries_updates(
-        timeseries_list: List[TimeSeries], config: IceCreamFactoryConfig, client: CogniteClient
+    timeseries_list: List[TimeSeries], config: IceCreamFactoryConfig, client: CogniteClient
 ) -> List[TimeSeries]:
     """
     Update Timeseries object with dataset_id and asset_id. This is so non-existing timeseries get created with
@@ -57,7 +56,7 @@ def timeseries_updates(
 
 
 def run_extractor(
-        cognite: CogniteClient, states: AbstractStateStore, config: IceCreamFactoryConfig, stop_event: Event
+    cognite: CogniteClient, states: AbstractStateStore, config: IceCreamFactoryConfig, stop_event: Event
 ) -> None:
     """
     Run extractor and extract datapoints for timeseries for sites given in config.
@@ -101,12 +100,11 @@ def run_extractor(
     def chunks(lst, n):
         """Yield successive n-sized chunks from lst."""
         for i in range(0, len(lst), n):
-            yield lst[i:i + n]
+            yield lst[i : i + n]
 
     futures = []
     with clean_uploader_queue as queue:
-        with ThreadPoolExecutor(thread_name_prefix="Data",
-                                max_workers=config.extractor.parallelism * 2) as executor:
+        with ThreadPoolExecutor(thread_name_prefix="Data", max_workers=config.extractor.parallelism * 2) as executor:
             if config.backfill.enabled:
                 logging.info(f"Starting backfiller. Back-filling for {config.backfill.history_min} minutes of data")
 
@@ -115,7 +113,7 @@ def run_extractor(
                     futures.append(executor.submit(worker.run))
 
             if config.frontfill.enabled:
-                logging.info(f"Starting frontfiller...")
+                logging.info("Starting frontfiller...")
 
                 for i, batch in enumerate(chunks(timeseries_to_query, 10)):
                     worker = Streamer(queue, stop_event, ice_cream_api, batch, config, states)
@@ -135,8 +133,10 @@ def run_extractor(
         states.set_state(fake_state_ext_id, low + 1, None)
 
         if low % random.randint(15, 20) == 0:
-            raise NotImplementedError("This is a synthetic error. Data was extracted successfully, but monitoring "
-                                      "and extraction pipelines should be triggered for DEMO purposes")
+            raise NotImplementedError(
+                "This is a synthetic error. Data was extracted successfully, but monitoring "
+                "and extraction pipelines should be triggered for DEMO purposes"
+            )
 
 
 def main(config_file_path: str = "extractor_config.yaml") -> None:
@@ -144,12 +144,12 @@ def main(config_file_path: str = "extractor_config.yaml") -> None:
     Main entrypoint.
     """
     with Extractor(
-            name="datapoints_rest_extractor",
-            description="An extractor that ingest datapoints from the Ice Cream Factory API to CDF clean",
-            config_class=IceCreamFactoryConfig,
-            version="1.0",
-            config_file_path=config_file_path,
-            run_handle=run_extractor,
+        name="datapoints_rest_extractor",
+        description="An extractor that ingest datapoints from the Ice Cream Factory API to CDF clean",
+        config_class=IceCreamFactoryConfig,
+        version="1.0",
+        config_file_path=config_file_path,
+        run_handle=run_extractor,
     ) as extractor:
         extractor.run()
 

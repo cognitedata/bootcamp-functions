@@ -44,4 +44,3 @@ class IceCreamFactoryConfig(BaseConfig):
     frontfill: FrontFillConfig
     oee_timeseries_dataset_ext_id: str  # ext id of dataset for oee timeseries. Used to populate timeseries in the correct dataset
     extractor: ExtractorConfig
-

@@ -1,8 +1,10 @@
 import logging
+
 from threading import Event
 from typing import List, Set
 
 import arrow
+
 from cognite.client.data_classes import TimeSeries
 from cognite.extractorutils.statestore import AbstractStateStore
 from cognite.extractorutils.uploader import TimeSeriesUploadQueue
@@ -25,13 +27,13 @@ class Streamer:
     """
 
     def __init__(
-            self,
-            upload_queue: TimeSeriesUploadQueue,
-            stop: Event,
-            api: IceCreamFactoryAPI,
-            timeseries_list: List[TimeSeries],
-            config: IceCreamFactoryConfig,
-            states: AbstractStateStore,
+        self,
+        upload_queue: TimeSeriesUploadQueue,
+        stop: Event,
+        api: IceCreamFactoryAPI,
+        timeseries_list: List[TimeSeries],
+        config: IceCreamFactoryConfig,
+        states: AbstractStateStore,
     ):
         # Target iteration time to allow some throttling between iterations
         self.target_iteration_time = int(1.5 * len(timeseries_list))
@@ -74,5 +76,7 @@ class Streamer:
         while True:
             for ts in self.timeseries_list:
                 self._extract_timeseries(ts)
-            if not (self.config.frontfill.continuous and self.stop.wait(60.0 * self.config.frontfill.lookback_min / 6.)):
+            if not (
+                self.config.frontfill.continuous and self.stop.wait(60.0 * self.config.frontfill.lookback_min / 6.0)
+            ):
                 break

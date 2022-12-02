@@ -1,15 +1,16 @@
 import logging
+
 from threading import Event
 from typing import List, Set
 
 import arrow
+
 from cognite.client.data_classes import TimeSeries
 from cognite.extractorutils.statestore import AbstractStateStore
 from cognite.extractorutils.uploader import TimeSeriesUploadQueue
-from retry import retry
-
 from ice_cream_factory_datapoints_extractor.config import IceCreamFactoryConfig
 from ice_cream_factory_datapoints_extractor.ice_cream_factory_api import IceCreamFactoryAPI
+from retry import retry
 
 
 class Backfiller:
@@ -27,13 +28,13 @@ class Backfiller:
     """
 
     def __init__(
-            self,
-            upload_queue: TimeSeriesUploadQueue,
-            stop: Event,
-            api: IceCreamFactoryAPI,
-            timeseries_list: List[TimeSeries],
-            config: IceCreamFactoryConfig,
-            states: AbstractStateStore,
+        self,
+        upload_queue: TimeSeriesUploadQueue,
+        stop: Event,
+        api: IceCreamFactoryAPI,
+        timeseries_list: List[TimeSeries],
+        config: IceCreamFactoryConfig,
+        states: AbstractStateStore,
     ):
         # Target iteration time to allow some throttling between iterations
         self.target_iteration_time = 2 * len(timeseries_list)
@@ -73,7 +74,7 @@ class Backfiller:
 
     def process(self, timeseries, start, end):
         logging.info(f"Getting historical data {timeseries.external_id} from {start} to {end}")
-        single_query_lookback = - min(60, self.config.backfill.history_min)
+        single_query_lookback = -min(60, self.config.backfill.history_min)
         while end > start and not self.stop.is_set():
 
             from_time = end.shift(minutes=single_query_lookback)  # can query API for only 10 min of data
