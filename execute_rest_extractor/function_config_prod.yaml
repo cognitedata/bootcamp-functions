@@ -1,7 +1,7 @@
 # Note: Parameters can be hardcoded directly in 'deploy-functions.yaml'
 # if you do not need to vary them between your functions!
 description: "Function to deploy rest extractor"
-owner: CDF Bootcamp Team
+owner: CDF  Bootcamp Team
 cpu: 1.0
 memory: 0.5
 env_vars: {"COGNITE_BASE_URL": "https://greenfield.cognitedata.com",
