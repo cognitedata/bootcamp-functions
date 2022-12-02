@@ -10,7 +10,7 @@ jobs:
     with:
       deploy_folders: >-
         (
-        "ice_cream_factory_datapoints_extractor"
+        "execute_rest_extractor"
         )
       trigger_deploy_all_folders: >-
         (
