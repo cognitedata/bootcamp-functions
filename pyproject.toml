@@ -5,9 +5,13 @@ description = "Cognite Functions template for OIDC projects"
 authors = ["hakon.treider@cognite.com"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "~3.8"
 pytest-custom-exit-code = "^0, >=0.3"
 cognite-sdk-core = "^2.46"
+python-dotenv = "^0.21.0"
+cognite-extractor-utils = "*"
+retry = "*"
+ujson = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
