@@ -33,7 +33,7 @@ api:
 extractor:
   create-assets: false
   upload_interval: 5
-  parallelism: 2
+  parallelism: 4
   state_store:
     raw:
       database: src:002:opcua:db:state

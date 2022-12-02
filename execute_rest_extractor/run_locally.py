@@ -16,5 +16,5 @@ def handle(data):
 
 
 if __name__ == "__main__":
-    data = {"frontfill_lookback_min": "3600"}
+    data = {"frontfill_lookback_min": "120"}
     handle(data)

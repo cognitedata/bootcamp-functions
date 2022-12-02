@@ -1,2 +1,2 @@
-- name: Frontfill every 30 minutes last hour of data
-  cron: "*/30 * * * *"
+- name: Frontfill every 10 minutes last hour of data
+  cron: "*/10 * * * *"
