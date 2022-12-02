@@ -1,0 +1,3 @@
+cognite-extractor-utils>=2.2.0
+retry
+ujson

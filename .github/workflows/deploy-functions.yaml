@@ -10,8 +10,7 @@ jobs:
     with:
       deploy_folders: >-
         (
-        "example_function1"
-        "example_function2"
+        "ice_cream_factory_datapoints_extractor"
         )
       trigger_deploy_all_folders: >-
         (
