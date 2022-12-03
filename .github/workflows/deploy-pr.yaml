@@ -8,8 +8,8 @@ jobs:
     strategy:
       matrix:
         function:
-          - example_function1
-          - example_function2
+          - execute_rest_extractor
+          - oee_timeseries
     steps:
       - uses: actions/checkout@v2
 
