@@ -65,6 +65,32 @@ def transform_and_sum_datapoints(dps: DatapointsList) -> pd.Series:
     return dps.to_pandas().T.stack().groupby(level=[0]).sum()
 
 
+def calculate_uptime(dps: DatapointsList, period_start, period_end) -> pd.Series:
+    """
+    Takes a DatapointsList and calculate uptime
+
+    """
+    output = {}
+    for ds in dps:
+
+        # period_start = pd.Timestamp(ts.shift(hours=-5).float_timestamp * 1000, unit="ms")
+        # period_end = pd.Timestamp(ts.float_timestamp * 1000, unit="ms")
+
+        period_start = arrow.get(period_start)
+        period_end = arrow.get(period_end)
+
+        series = ds.to_pandas().iloc[:, 0].sort_index(ascending=True)
+        ts_period_start = pd.Timestamp(period_start.int_timestamp * 1000, unit="ms")
+        ts_period_end = pd.Timestamp(period_end.int_timestamp * 1000, unit="ms")
+        if min(series.index) < ts_period_start:
+            series.rename(index={min(series.index): ts_period_start}, inplace=True)
+        if max(series.index) > ts_period_end:
+            series.rename(index={max(series.index): ts_period_end}, inplace=True)
+        series_ffill = series.resample("min").ffill()
+        output[ds.external_id] = series_ffill.sum()
+    return output
+
+
 def calculate_count(
     client: CogniteClient, timeseries: TimeSeriesList, end_time: NonNegativeInt, lookback_minutes: NonNegativeInt = 60
 ) -> pd.Series:
@@ -79,6 +105,21 @@ def calculate_count(
     dps = client.datapoints.retrieve(external_id=xids, start=start, end=end_time)
 
     return transform_and_sum_datapoints(dps)
+
+
+def get_uptime(
+    client: CogniteClient, timeseries: TimeSeriesList, end_time: NonNegativeInt, lookback_minutes: NonNegativeInt = 60
+) -> pd.Series:
+    """
+    Retrieving uptime from CDF
+    """
+    end = arrow.get(end_time)
+    start = end.shift(minutes=-lookback_minutes).timestamp() * 1000
+
+    xids = [ts.external_id for ts in timeseries]
+    dps = client.datapoints.retrieve(external_id=xids, start=start, end=end_time, include_outside_points=True)
+
+    return calculate_uptime(dps, start, end_time)
 
 
 def calculate_off_spec(good_count: NonNegativeInt, total_count: NonNegativeInt) -> NonNegativeInt:
@@ -97,15 +138,6 @@ def safe_divide(func: Callable):
             return 0.0
 
     return wrapper
-
-
-def calculate_actual_runtime(equipment_ts: pd.Series, lookback_minutes: NonNegativeInt) -> NonNegativeFloat:
-    if equipment_ts.shape[0] == 0:
-        return 0.0
-
-
-def calculate_planned_runtime() -> NonNegativeFloat:
-    return 0.0
 
 
 @safe_divide

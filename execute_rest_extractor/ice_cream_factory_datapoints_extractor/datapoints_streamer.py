@@ -47,9 +47,7 @@ class Streamer:
         self.timeseries_list = timeseries_list
         self.timeseries_seen_set: Set[str] = set()
 
-        _frontfill_lookback_min = os.getenv("FRONTFILL_LOOKBACK_MIN")
-        if _frontfill_lookback_min:
-            config.frontfill.lookback_min = int(_frontfill_lookback_min)
+        config.frontfill.lookback_min = int(os.getenv("FRONTFILL_LOOKBACK_MIN", config.frontfill.lookback_min))
 
     @retry(tries=10)
     def _extract_timeseries(self, timeseries: TimeSeries) -> None:
