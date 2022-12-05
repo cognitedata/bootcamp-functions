@@ -73,9 +73,6 @@ def calculate_uptime(dps: DatapointsList, period_start, period_end) -> pd.Series
     output = {}
     for ds in dps:
 
-        # period_start = pd.Timestamp(ts.shift(hours=-5).float_timestamp * 1000, unit="ms")
-        # period_end = pd.Timestamp(ts.float_timestamp * 1000, unit="ms")
-
         period_start = arrow.get(period_start)
         period_end = arrow.get(period_end)
 
