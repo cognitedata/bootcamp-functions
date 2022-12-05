@@ -45,13 +45,6 @@ def get_client() -> CogniteClient:
     token_url = os.getenv("COGNITE_TOKEN_URL")
     cognite_project = os.getenv("COGNITE_PROJECT")
 
-    print(base_url)
-    print(scopes)
-    print(client_id)
-    print(client_secret)
-    print(token_url)
-    print(cognite_project)
-
     creds = OAuthClientCredentials(
         token_url=token_url,
         client_id=client_id,

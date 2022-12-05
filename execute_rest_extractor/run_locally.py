@@ -1,19 +1,10 @@
-import os
-
 from dotenv import load_dotenv
-from ice_cream_factory_datapoints_extractor import extractor
+
+from execute_rest_extractor.handler import handle
 
 
 # Import Environment Variables
-load_dotenv(".env")
-
-
-def handle(data):
-    print("running rest extractor locally")
-    os.environ["FRONTFILL_LOOKBACK_MIN"] = data.get("frontfill_lookback_min")
-    extractor.main(config_file_path="execute_rest_extractor/extractor_config.yaml")
-    print("running rest extractor locally is done")
-
+load_dotenv()
 
 if __name__ == "__main__":
     data = {"frontfill_lookback_min": "120"}
