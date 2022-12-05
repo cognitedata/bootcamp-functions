@@ -1,6 +1,6 @@
 import re
 
-from typing import Callable, Dict, List
+from typing import Callable, List
 
 import arrow
 import pandas as pd
@@ -15,15 +15,6 @@ def split_and_join(text: str) -> str:
     output = re.split(":|_", text)  # split text at ":" or "_"
     output = [out.title() if i > 0 else out for i, out in enumerate(output)]
     return " ".join(output)
-
-
-def create_ext_id_asset_pairs(timeseries: TimeSeriesList) -> Dict[str, NonNegativeInt]:
-    return {ts.external_id: ts.asset_id for ts in timeseries}
-
-
-def retrieve_cycle_times(client: CogniteClient, ext_id_asset_pairs: Dict[str, NonNegativeInt]) -> Dict[int, int]:
-    assets = client.assets.retrieve_multiple(ids=list(ext_id_asset_pairs.values()))
-    return {asset.id: int(asset.metadata["cycle time"][0]) for asset in assets}
 
 
 def get_timeseries_by_site_and_type(client: CogniteClient, typ: str, sites: List[str] = None) -> TimeSeriesList:
@@ -108,7 +99,7 @@ def calculate_uptime(
     client: CogniteClient, timeseries: TimeSeriesList, end_time: NonNegativeInt, lookback_minutes: NonNegativeInt = 60
 ) -> pd.Series:
     """
-    Retrieving uptime from CDF
+    Retrieving status from CDF
     """
     end = arrow.get(end_time)
     start = end.shift(minutes=-lookback_minutes).timestamp() * 1000
@@ -119,14 +110,6 @@ def calculate_uptime(
     return extract_uptime(dps, start, end_time)
 
 
-def calculate_off_spec(good_count: NonNegativeInt, total_count: NonNegativeInt) -> NonNegativeInt:
-    return total_count - good_count
-
-
-def calculate_theoretical_runtime(cycle_time: NonNegativeFloat, total_count: NonNegativeInt) -> NonNegativeFloat:
-    return cycle_time * total_count
-
-
 def safe_divide(func: Callable):
     def wrapper(*args, **kwargs):
         try:
@@ -135,6 +118,14 @@ def safe_divide(func: Callable):
             return 0.0
 
     return wrapper
+
+
+def calculate_theoretical_runtime(cycle_time: NonNegativeFloat, total_count: NonNegativeInt) -> NonNegativeFloat:
+    return cycle_time * total_count
+
+
+def calculate_off_spec(good_count: NonNegativeInt, total_count: NonNegativeInt) -> NonNegativeInt:
+    return total_count - good_count
 
 
 @safe_divide
