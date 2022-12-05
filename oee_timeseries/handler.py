@@ -9,8 +9,8 @@ from calculations import (
     calculate_performance,
     calculate_quality,
     calculate_theoretical_runtime,
+    calculate_uptime,
     get_timeseries_by_site_and_type,
-    get_uptime,
     insert_datapoints,
 )
 from cognite.client import CogniteClient
@@ -40,8 +40,8 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
     total_counts = calculate_count(client, counts, latest_timestamp_ms, lookback_minutes)
     total_good = calculate_count(client, goods, latest_timestamp_ms, lookback_minutes)
 
-    actual_run_time = get_uptime(client, status, latest_timestamp_ms, lookback_minutes)
-    planned_run_time = get_uptime(client, planned_status, latest_timestamp_ms, lookback_minutes)
+    actual_run_time = calculate_uptime(client, status, latest_timestamp_ms, lookback_minutes)
+    planned_run_time = calculate_uptime(client, planned_status, latest_timestamp_ms, lookback_minutes)
 
     off_spec_dps = []
     quality_dps = []
