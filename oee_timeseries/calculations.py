@@ -65,7 +65,7 @@ def transform_and_sum_datapoints(dps: DatapointsList) -> pd.Series:
     return dps.to_pandas().T.stack().groupby(level=[0]).sum()
 
 
-def calculate_uptime(dps: DatapointsList, period_start, period_end) -> pd.Series:
+def extract_uptime(dps: DatapointsList, period_start, period_end) -> pd.Series:
     """
     Takes a DatapointsList and calculate uptime
 
@@ -104,7 +104,7 @@ def calculate_count(
     return transform_and_sum_datapoints(dps)
 
 
-def get_uptime(
+def calculate_uptime(
     client: CogniteClient, timeseries: TimeSeriesList, end_time: NonNegativeInt, lookback_minutes: NonNegativeInt = 60
 ) -> pd.Series:
     """
@@ -116,7 +116,7 @@ def get_uptime(
     xids = [ts.external_id for ts in timeseries]
     dps = client.datapoints.retrieve(external_id=xids, start=start, end=end_time, include_outside_points=True)
 
-    return calculate_uptime(dps, start, end_time)
+    return extract_uptime(dps, start, end_time)
 
 
 def calculate_off_spec(good_count: NonNegativeInt, total_count: NonNegativeInt) -> NonNegativeInt:
