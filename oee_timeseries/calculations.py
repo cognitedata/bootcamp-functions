@@ -6,7 +6,7 @@ import arrow
 import pandas as pd
 
 from cognite.client import CogniteClient
-from cognite.client.data_classes import DatapointsList, TimeSeries, TimeSeriesList
+from cognite.client.data_classes import DatapointsList, DataSet, TimeSeries, TimeSeriesList
 from cognite.client.exceptions import CogniteNotFoundError
 from pydantic import NonNegativeFloat, NonNegativeInt
 
@@ -35,23 +35,19 @@ def get_timeseries_by_site_and_type(client: CogniteClient, typ: str, sites: List
     return TimeSeriesList(ts)
 
 
-def insert_datapoints(client: CogniteClient, datapoints, typ: str) -> None:
+def insert_datapoints(client: CogniteClient, datapoints, typ: str, data_set: DataSet) -> None:
     try:
         client.datapoints.insert_multiple(datapoints)
     except CogniteNotFoundError:
         # Timeseries have not been created, create them
         print(f"Creating timeseries {typ}")
 
-        asset_xids = [dp["externalId"].split(":")[0] for dp in datapoints]
-        assets = client.assets.retrieve_multiple(external_ids=asset_xids)
-        asset_dict = {a.external_id: a.id for a in assets}
-
         timeseries_list = [
             TimeSeries(
                 external_id=dp["externalId"],
                 name=split_and_join(dp["externalId"]),
                 metadata={"type": typ},
-                asset_id=asset_dict.get(dp["externalId"].split(":")[0], None),
+                data_set_id=data_set.id,
             )
             for dp in datapoints
         ]

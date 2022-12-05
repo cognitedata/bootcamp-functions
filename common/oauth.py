@@ -2,13 +2,9 @@ import os
 
 from dataclasses import dataclass, field
 
-from cognite.client import ClientConfig, CogniteClient
-from cognite.client.config import global_config
+from cognite.client import CogniteClient
+from cognite.client.config import ClientConfig
 from cognite.client.credentials import OAuthClientCredentials
-from cognite.extractorutils.configtools import load_yaml
-
-
-global_config.disable_pypi_version_check = True
 
 
 @dataclass
@@ -35,32 +31,34 @@ class FunctionConfig:
     metadata: dict = field(default_factory=dict)
 
 
-def get_client(config_file_path: str = "function_config_test.yaml") -> CogniteClient:
+def get_client() -> CogniteClient:
     """
     Method to get the CogniteClient. Meant to be used for running functions locally during development.
-    Args:
-        config_file_path:
     Returns:
         CogniteClient
     """
-    with open(config_file_path) as config_file:
-        config = load_yaml(config_file, FunctionConfig)
 
-    scopes = [f"https://{config.cdf_cluster}.cognitedata.com/.default"]
-    client_secret = os.getenv("COGNITE_CLIENT_SECRET")  # store secret in env variable
-    token_url = f"https://login.microsoftonline.com/{config.deployment_tenant_id}/oauth2/v2.0/token"
-    base_url = f"https://{config.cdf_cluster}.cognitedata.com"
+    base_url = os.getenv("COGNITE_BASE_URL")
+    scopes = [f"{base_url}/.default"]
+    client_id = os.getenv("COGNITE_CLIENT_ID")
+    client_secret = os.getenv("COGNITE_CLIENT_SECRET")
+    token_url = os.getenv("COGNITE_TOKEN_URL")
+    cognite_project = os.getenv("COGNITE_PROJECT")
+
+    print(base_url)
+    print(scopes)
+    print(client_id)
+    print(client_secret)
+    print(token_url)
+    print(cognite_project)
 
     creds = OAuthClientCredentials(
         token_url=token_url,
-        client_id=config.deployment_client_id,
+        client_id=client_id,
         scopes=scopes,
         client_secret=client_secret,
     )
-    cnf = ClientConfig(
-        client_name="my-special-client",
-        project=config.cdf_project,
-        credentials=creds,
-        base_url=base_url,
-    )
+
+    cnf = ClientConfig(client_name="local-run-function", project=cognite_project, credentials=creds, base_url=base_url)
+
     return CogniteClient(cnf)
