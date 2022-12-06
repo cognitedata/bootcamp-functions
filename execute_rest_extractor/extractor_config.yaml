@@ -40,11 +40,11 @@ extractor:
       table: timeseries_datapoints_states
 
 backfill:
-  enabled: True
+  enabled: False
   history-days: 30
 
 frontfill:
-  enabled: False
+  enabled: True
   continuous: False
   lookback-min: 60
 
