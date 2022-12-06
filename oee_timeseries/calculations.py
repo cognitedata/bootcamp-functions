@@ -1,14 +1,12 @@
-import math
 import re
 
-from typing import Callable, List
+from typing import List
 
 import arrow
 import pandas as pd
 
 from cognite.client import CogniteClient
 from cognite.client.data_classes import DatapointsList, DataSet, TimeSeries, TimeSeriesList
-from cognite.client.exceptions import CogniteNotFoundError
 from pydantic import NonNegativeFloat, NonNegativeInt
 
 
@@ -37,26 +35,29 @@ def get_timeseries_by_site_and_type(client: CogniteClient, typ: str, sites: List
 
 
 def insert_datapoints(client: CogniteClient, datapoints, typ: str, data_set: DataSet) -> None:
-    try:
-        client.datapoints.insert_multiple(datapoints)
-    except CogniteNotFoundError:
-        # Timeseries have not been created, create them
-        print(f"Creating timeseries {typ}")
-
-        timeseries_list = [
-            TimeSeries(
-                external_id=dp["externalId"],
-                name=split_and_join(dp["externalId"]),
-                metadata={"type": typ},
-                data_set_id=data_set.id,
-            )
-            for dp in datapoints
-        ]
-        # Create timeseries
+    """
+    Takes a list datapoints and uploads data CDF
+    """
+    avail_ts = client.time_series.list(data_set_ids=[data_set.id], metadata={"type": typ}, limit=None)
+    avail_ts_external_id = [ts.external_id for ts in avail_ts]
+    missing_ts = [ts for ts in datapoints if ts["externalId"] not in avail_ts_external_id]
+    timeseries_list = [
+        TimeSeries(
+            external_id=new_ts["externalId"],
+            name=split_and_join(new_ts["externalId"]),
+            metadata={"type": typ},
+            data_set_id=data_set.id,
+        )
+        for new_ts in missing_ts
+    ]
+    if len(timeseries_list) > 0:
+        # Create missing timeseries
         client.time_series.create(timeseries_list)
-        # Add datapoints
-        print("Inserting datapoints")
-        client.datapoints.insert_multiple(datapoints)
+        print(f"Created missing {str(len(timeseries_list))} timeserie(s).")
+
+    # Insert datapoints
+    client.datapoints.insert_multiple(datapoints)
+    print(f"Inserted datapoints for type {typ}. For {str(len(datapoints))} timeseries.")
 
 
 def transform_and_sum_datapoints(dps: DatapointsList) -> pd.Series:
@@ -120,20 +121,6 @@ def calculate_uptime(
     return extract_uptime(dps, start, end_time)
 
 
-def safe_divide(func: Callable):
-    def wrapper(*args, **kwargs):
-        try:
-            res = func(*args, **kwargs)
-            if math.isnan(res):
-                return 0.0
-            else:
-                return func(*args, **kwargs)
-        except ZeroDivisionError:
-            return 0.0
-
-    return wrapper
-
-
 def calculate_theoretical_runtime(cycle_time: NonNegativeFloat, total_count: NonNegativeInt) -> NonNegativeFloat:
     return cycle_time * total_count
 
@@ -142,16 +129,19 @@ def calculate_off_spec(good_count: NonNegativeInt, total_count: NonNegativeInt) 
     return total_count - good_count
 
 
-@safe_divide
 def calculate_quality(good_count: NonNegativeInt, total_count: NonNegativeInt) -> NonNegativeFloat:
+    if (good_count <= 0) or (total_count <= 0):
+        return 0.0
     return good_count / total_count
 
 
-@safe_divide
 def calculate_availability(actual_runtime: NonNegativeFloat, planned_runtime: NonNegativeFloat) -> NonNegativeFloat:
+    if (actual_runtime <= 0) or (planned_runtime <= 0):
+        return 0.0
     return actual_runtime / planned_runtime
 
 
-@safe_divide
 def calculate_performance(actual_runtime: NonNegativeFloat, theoretical_runtime: NonNegativeFloat) -> NonNegativeFloat:
+    if (actual_runtime <= 0) or (theoretical_runtime <= 0):
+        return 0.0
     return actual_runtime / theoretical_runtime
