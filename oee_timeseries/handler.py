@@ -10,6 +10,7 @@ from calculations import (
     calculate_quality,
     calculate_theoretical_runtime,
     calculate_uptime,
+    get_state,
     get_timeseries_by_site_and_type,
     insert_datapoints,
 )
@@ -20,9 +21,10 @@ CYCLE_TIME = 3
 
 
 def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
-    print(f"Input data = {data}")
-    latest_ts = int(arrow.utcnow().shift(hours=-1).timestamp() * 1000)
-    print(f"Current time in ms = {latest_ts}")
+    print(f"Input data of function: {data}")
+    low, high = get_state(client, db_name="src:002:opcua:db:state", table_name="timeseries_datapoints_states")
+    latest_ts = high
+    print(f"Latest available datapoint from {arrow.get(latest_ts).humanize()}. {arrow.get(latest_ts).format()}")
 
     # Input data
     lookback_minutes = data.get("lookback_minutes", 60)
@@ -40,42 +42,64 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
     total_counts = calculate_count(client, counts, latest_timestamp_ms, lookback_minutes)
     total_good = calculate_count(client, goods, latest_timestamp_ms, lookback_minutes)
 
-    actual_run_time = calculate_uptime(client, status, latest_timestamp_ms, lookback_minutes)
-    planned_run_time = calculate_uptime(client, planned_status, latest_timestamp_ms, lookback_minutes)
+    total_actual_run_time = calculate_uptime(client, status, latest_timestamp_ms, lookback_minutes)
+    total_planned_run_time = calculate_uptime(client, planned_status, latest_timestamp_ms, lookback_minutes)
 
     off_spec_dps = []
     quality_dps = []
     performance_dps = []
     availability_dps = []
 
-    for idx, val in total_counts.items():
-        prefix = idx.split(":")[0]
-        good_count = total_good[f"{prefix}:good"]
+    all_prefix = []
+    all_prefix += [tag.split(":")[0] for tag in total_counts.index]
+    all_prefix += [tag.split(":")[0] for tag in total_good.index]
+    all_prefix += [tag.split(":")[0] for tag in total_actual_run_time.index]
+    all_prefix += [tag.split(":")[0] for tag in total_planned_run_time.index]
+    all_prefix = set(all_prefix)
 
-        # Calculate OFF_SPEC and QUALITY for all equipment
-        off_spec = calculate_off_spec(good_count, val)
-        quality = calculate_quality(good_count, val)
+    for prefix in all_prefix:
 
-        off_spec_dps.append({"externalId": f"{prefix}:off_spec", "datapoints": [(latest_timestamp_ms, off_spec)]})
-        quality_dps.append({"externalId": f"{prefix}:quality", "datapoints": [(latest_timestamp_ms, quality)]})
+        try:
+            count = total_counts[f"{prefix}:count|sum"]
+            good_count = total_good[f"{prefix}:good|sum"]
 
-        # Calculate the PERFORMANCE
-        theory_cycle_time = calculate_theoretical_runtime(CYCLE_TIME, val)
-        performance = calculate_performance(
-            actual_runtime=actual_run_time[f"{prefix}:status"], theoretical_runtime=theory_cycle_time
-        )
-        performance_dps.append(
-            {"externalId": f"{prefix}:performance", "datapoints": [(latest_timestamp_ms, performance)]}
-        )
+            # Calculate OFF_SPEC and QUALITY for all equipment
+            off_spec = calculate_off_spec(good_count, count)
+            quality = calculate_quality(good_count, count)
 
-        # Calculate the AVAILABILITY
-        availability = calculate_availability(
-            actual_runtime=actual_run_time[f"{prefix}:status"],
-            planned_runtime=planned_run_time[f"{prefix}:planned_status"],
-        )
-        availability_dps.append(
-            {"externalId": f"{prefix}:availability", "datapoints": [(latest_timestamp_ms, availability)]}
-        )
+            if off_spec:
+                off_spec_dps.append(
+                    {"externalId": f"{prefix}:off_spec", "datapoints": [(latest_timestamp_ms, off_spec)]}
+                )
+
+            if quality:
+                quality_dps.append({"externalId": f"{prefix}:quality", "datapoints": [(latest_timestamp_ms, quality)]})
+
+            # Calculate the PERFORMANCE
+            theory_cycle_time = calculate_theoretical_runtime(CYCLE_TIME, count)
+            performance = calculate_performance(
+                actual_runtime=total_actual_run_time[f"{prefix}:status"], theoretical_runtime=theory_cycle_time
+            )
+
+            if performance:
+                performance_dps.append(
+                    {"externalId": f"{prefix}:performance", "datapoints": [(latest_timestamp_ms, performance)]}
+                )
+
+            # Calculate the AVAILABILITY
+            availability = calculate_availability(
+                actual_runtime=total_actual_run_time[f"{prefix}:status"],
+                planned_runtime=total_planned_run_time[f"{prefix}:planned_status"],
+            )
+            if availability:
+                availability_dps.append(
+                    {"externalId": f"{prefix}:availability", "datapoints": [(latest_timestamp_ms, availability)]}
+                )
+
+        except KeyError:
+            print(f"Failed to calculated values for {prefix}.")
+
+    print("Uploading datapoints to CDF.")
 
     insert_datapoints(client, off_spec_dps, "off_spec", data_set)
     insert_datapoints(client, quality_dps, "quality", data_set)

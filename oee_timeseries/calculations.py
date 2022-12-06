@@ -1,3 +1,4 @@
+import math
 import re
 
 from typing import Callable, List
@@ -9,6 +10,15 @@ from cognite.client import CogniteClient
 from cognite.client.data_classes import DatapointsList, DataSet, TimeSeries, TimeSeriesList
 from cognite.client.exceptions import CogniteNotFoundError
 from pydantic import NonNegativeFloat, NonNegativeInt
+
+
+def get_state(client: CogniteClient, db_name: str, table_name: str, tag: str = None):
+    if tag:
+        state = client.raw.rows.retrieve(db_name, table_name, tag)
+        return (state.columns.get("low"), state.columns.get("high"))
+    else:
+        state = client.raw.rows.list(db_name, table_name, limit=None).to_pandas()
+        return (min(state["low"]), max(state["high"]))
 
 
 def split_and_join(text: str) -> str:
@@ -63,20 +73,20 @@ def extract_uptime(dps: DatapointsList, period_start, period_end) -> pd.Series:
     """
     output = {}
     for ds in dps:
-
         period_start = arrow.get(period_start)
         period_end = arrow.get(period_end)
-
         series = ds.to_pandas().iloc[:, 0].sort_index(ascending=True)
         ts_period_start = pd.Timestamp(period_start.int_timestamp * 1000, unit="ms")
         ts_period_end = pd.Timestamp(period_end.int_timestamp * 1000, unit="ms")
+        # Move outside datapoints to period start and end times
         if min(series.index) < ts_period_start:
             series.rename(index={min(series.index): ts_period_start}, inplace=True)
         if max(series.index) > ts_period_end:
             series.rename(index={max(series.index): ts_period_end}, inplace=True)
+        # Forward fill values and resample to minute granularity
         series_ffill = series.resample("min").ffill()
         output[ds.external_id] = series_ffill.sum()
-    return output
+    return pd.Series(output)
 
 
 def calculate_count(
@@ -90,7 +100,7 @@ def calculate_count(
 
     xids = [ts.external_id for ts in timeseries]
 
-    dps = client.datapoints.retrieve(external_id=xids, start=start, end=end_time)
+    dps = client.datapoints.retrieve(external_id=xids, start=start, end=end_time, aggregates=["sum"], granularity="1h")
 
     return transform_and_sum_datapoints(dps)
 
@@ -113,7 +123,11 @@ def calculate_uptime(
 def safe_divide(func: Callable):
     def wrapper(*args, **kwargs):
         try:
-            return func(*args, **kwargs)
+            res = func(*args, **kwargs)
+            if math.isnan(res):
+                return 0.0
+            else:
+                return func(*args, **kwargs)
         except ZeroDivisionError:
             return 0.0
 
