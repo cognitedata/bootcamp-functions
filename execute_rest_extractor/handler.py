@@ -5,8 +5,9 @@ from ice_cream_factory_datapoints_extractor import extractor
 
 def handle(secrets, data):
     print("running rest extractor")
-    os.environ["COGNITE_CLIENT_ID"] = secrets.get("client-id")
-    os.environ["COGNITE_CLIENT_SECRET"] = secrets.get("client-secret")
+    if secrets:
+        os.environ["COGNITE_CLIENT_ID"] = secrets.get("client-id")
+        os.environ["COGNITE_CLIENT_SECRET"] = secrets.get("client-secret")
     if data:
         if data.get("frontfill_lookback_min"):
             os.environ["FRONTFILL_LOOKBACK_MIN"] = data.get("frontfill_lookback_min")

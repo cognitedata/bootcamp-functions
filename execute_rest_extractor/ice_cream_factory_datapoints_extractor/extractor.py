@@ -7,15 +7,16 @@ from threading import Event
 from typing import List
 
 from cognite.client import CogniteClient
-from cognite.client.data_classes import DataSet, TimeSeries
+from cognite.client.data_classes import TimeSeries
 from cognite.extractorutils import Extractor
 from cognite.extractorutils.statestore import AbstractStateStore
 from cognite.extractorutils.uploader import TimeSeriesUploadQueue
 from cognite.extractorutils.util import ensure_time_series
-from ice_cream_factory_datapoints_extractor.config import IceCreamFactoryConfig
-from ice_cream_factory_datapoints_extractor.datapoints_backfiller import Backfiller
-from ice_cream_factory_datapoints_extractor.datapoints_streamer import Streamer
-from ice_cream_factory_datapoints_extractor.ice_cream_factory_api import IceCreamFactoryAPI
+
+from .config import IceCreamFactoryConfig
+from .datapoints_backfiller import Backfiller
+from .datapoints_streamer import Streamer
+from .ice_cream_factory_api import IceCreamFactoryAPI
 
 
 def timeseries_updates(
@@ -42,9 +43,8 @@ def timeseries_updates(
     try:
         oee_timeseries_dataset_id = client.data_sets.retrieve(external_id=config.oee_timeseries_dataset_ext_id).id
     except AttributeError:
-        logging.info("Could not find existing dataset, creating new")
-        ds = client.data_sets.create(DataSet(name="oee_timeseries", external_id=config.oee_timeseries_dataset_ext_id))
-        oee_timeseries_dataset_id = ds.id
+        logging.info("Could not find existing dataset. Have you run bootstrap cli?")
+        raise
 
     updated_timeseries_list: List[TimeSeries] = []
     for timeseries in timeseries_list:
@@ -106,7 +106,7 @@ def run_extractor(
     with clean_uploader_queue as queue:
         with ThreadPoolExecutor(thread_name_prefix="Data", max_workers=config.extractor.parallelism * 2) as executor:
             if config.backfill.enabled:
-                logging.info(f"Starting backfiller. Backfilling for {config.backfill.history_min} minutes of data")
+                logging.info(f"Starting backfiller. Back-filling for {config.backfill.history_days} days of data")
 
                 for i, batch in enumerate(chunks(timeseries_to_query, 10)):
                     worker = Backfiller(queue, stop_event, ice_cream_api, batch, config, states)

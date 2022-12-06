@@ -8,4 +8,4 @@ load_dotenv()
 
 if __name__ == "__main__":
     data = {"frontfill_lookback_min": "120"}
-    handle(data)
+    handle(None, data)

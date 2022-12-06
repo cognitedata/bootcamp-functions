@@ -17,7 +17,7 @@ cognite:
     external-id: "rest-api:oee:datapoints"
 
 api:
-  url: https://ice-cream-factory.inso-internal.cognite.ai
+  url: https://ice-cream-factory-staging.inso-internal.cognite.ai
   sites:
     - Oslo
     - Hannover
@@ -40,12 +40,13 @@ extractor:
       table: timeseries_datapoints_states
 
 backfill:
-  enabled: False
-  history-min: 1440
+  enabled: True
+  history-days: 30
 
 frontfill:
-  enabled: True
+  enabled: False
   continuous: False
   lookback-min: 60
+
 
 oee_timeseries_dataset_ext_id: src:002:opcua:ds
