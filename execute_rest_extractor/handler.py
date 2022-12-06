@@ -12,7 +12,7 @@ def handle(secrets, data):
         if data.get("frontfill_lookback_min"):
             os.environ["FRONTFILL_LOOKBACK_MIN"] = data.get("frontfill_lookback_min")
         else:
-            print("please supply `frontfill_lookback_min` variable in a valid JSON")
+            print("please supply `frontfill_lookback_min` variable as a valid JSON")
         print("overwrite default extractor config with the one supplied from JSON")
     extractor.main()
     print("running rest extractor done")
