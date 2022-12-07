@@ -25,5 +25,4 @@ if __name__ == "__main__":
         "data_set_external_id": "uc:001:oee:ds",
     }
 
-    # Delete Timeseries
     handle(client, data)
