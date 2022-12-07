@@ -9,10 +9,10 @@ import arrow
 import numpy as np
 from arrow import Arrow
 from cognite.client import CogniteClient
-from tools import insert_datapoints
 
 from oee_timeseries.tools import discover_datapoints
 from oee_timeseries.tools import get_timeseries_for_site
+from tools import insert_datapoints
 
 CYCLE_TIME = 3
 
@@ -30,6 +30,11 @@ def get_payload(func: Callable[[int], float], lookback_minutes: int, now: Arrow)
     ]
 
 
+def get_state(client, db_name, table_name):
+    state = client.raw.rows.list(db_name, table_name, limit=None).to_pandas()
+    return max(state["high"])
+
+
 def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
     print(f"Input data of function: {data}")
 
@@ -38,8 +43,9 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
     data_set_external_id = data.get("data_set_external_id", "uc:001:oee:ds")
     sites = data.get("sites")
     # now specifies the time upto which the OEE numbers will be calculated
-    # We don't want to run for current hour, since data might be incomplete
-    now = arrow.utcnow().shift(hours=-1)
+    # We want to balance the data freshness here
+    the_latest = get_state(client, db_name="src:002:opcua:db:state", table_name="timeseries_datapoints_states")
+    now = arrow.get(the_latest).shift(minutes=-10)
 
     window = (now.shift(minutes=-2 * lookback_minutes), now)
 
@@ -63,9 +69,9 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
             planned_uptime_points = np.array(discovered_points.get(f"{item}:planned_status"))[:, 1]
 
             if (
-                len(total_items) != len(good_items)
-                or len(total_items) != len(uptime_points)
-                or len(total_items) != len(planned_uptime_points)
+                    len(total_items) != len(good_items)
+                    or len(total_items) != len(uptime_points)
+                    or len(total_items) != len(planned_uptime_points)
             ):
                 raise RuntimeError(f"CDF returned different amount of aggregations for {window}")
 
@@ -134,7 +140,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
                         "externalId": f"{item}:oee",
                         "datapoints": get_payload(
                             lambda x, q=quality, p=produced, r=ideal_rate, pl=planned_uptime: (q[x] * p[x] * r[x])
-                            / pl[x]
+                                                                                              / pl[x]
                             if pl[x] != 0
                             else 0.0,
                             lookback_minutes,
