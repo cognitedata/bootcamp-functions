@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import argparse
 import ast
 import logging
 import os
 import random
-
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import as_completed
+from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 from typing import List
 

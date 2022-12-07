@@ -1,9 +1,14 @@
-from typing import Dict, List, Union
+from __future__ import annotations
+
+from typing import Dict
+from typing import List
+from typing import Union
 
 import ujson as ujson
-
 from cognite.client.data_classes import TimeSeries
-from requests import Response, Session, adapters  # type: ignore
+from requests import adapters
+from requests import Response
+from requests import Session
 
 
 class IceCreamFactoryAPI:

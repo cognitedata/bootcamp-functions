@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 import logging
 import os
-
 from threading import Event
-from typing import List, Set
+from typing import List
+from typing import Set
 
 import arrow
-
 from cognite.client.data_classes import TimeSeries
 from cognite.extractorutils.statestore import AbstractStateStore
 from cognite.extractorutils.uploader import TimeSeriesUploadQueue

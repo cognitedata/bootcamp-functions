@@ -1,6 +1,8 @@
-import os
+from __future__ import annotations
 
-from dataclasses import dataclass, field
+import os
+from dataclasses import dataclass
+from dataclasses import field
 
 from cognite.client import CogniteClient
 from cognite.client.config import ClientConfig
