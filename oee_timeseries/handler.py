@@ -11,8 +11,8 @@ from arrow import Arrow
 from cognite.client import CogniteClient
 from tools import insert_datapoints
 
-from oee_timeseries.tools import discover_datapoints
-from oee_timeseries.tools import get_timeseries_for_site
+from .tools import discover_datapoints
+from .tools import get_timeseries_for_site
 
 CYCLE_TIME = 3
 
