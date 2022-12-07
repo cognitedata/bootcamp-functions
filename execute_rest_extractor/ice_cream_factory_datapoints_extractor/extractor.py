@@ -73,7 +73,7 @@ def run_extractor(
     config.frontfill.lookback_min = int(os.getenv("FRONTFILL_LOOKBACK_MIN", config.frontfill.lookback_min))
     config.backfill.enabled = bool(os.getenv("BACKFILL_ENABLED", config.backfill.enabled))
     config.backfill.history_days = int(os.getenv("BACKFILL_HISTORY_DAYS", config.backfill.history_days))
-    config.sites = os.getenv("SITES", config.sites)
+    config.api.sites = os.getenv("SITES", config.api.sites)
 
     logging.basicConfig(level=logging.INFO)
     logging.info("Starting Ice Cream Factory datapoints extractor")

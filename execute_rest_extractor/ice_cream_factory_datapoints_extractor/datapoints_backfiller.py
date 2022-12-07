@@ -1,4 +1,5 @@
 import logging
+import os
 
 from threading import Event
 from typing import List, Set
@@ -49,6 +50,10 @@ class Backfiller:
         self.stop_at = arrow.utcnow().shift(days=-config.backfill.history_days)
         self.now_ts = arrow.utcnow()
         self.timeseries_seen_set: Set[str] = set()
+
+        if os.getenv("BACKFILL_SHIFT_NOW_TS_BACKWARDS_DAYS"):
+            self.now_ts = arrow.utcnow().shift(days=-int(os.getenv("BACKFILL_SHIFT_NOW_TS_BACKWARDS_DAYS")))
+            self.stop_at = self.now_ts.shift(days=-config.backfill.history_days)
 
     @retry(tries=10)
     def _extract_time_series(self, timeseries: TimeSeries) -> None:
