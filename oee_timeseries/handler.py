@@ -9,10 +9,9 @@ import arrow
 import numpy as np
 from arrow import Arrow
 from cognite.client import CogniteClient
+from tools import discover_datapoints
+from tools import get_timeseries_for_site
 from tools import insert_datapoints
-
-from .tools import discover_datapoints
-from .tools import get_timeseries_for_site
 
 CYCLE_TIME = 3
 
