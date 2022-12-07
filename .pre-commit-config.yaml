@@ -4,7 +4,6 @@ repos:
     hooks:
       - id: reorder-python-imports
         args: [
-          --application-directories, '.:src',
           --py38-plus,
           --add-import, 'from __future__ import annotations',
         ]
