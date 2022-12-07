@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 import random
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -67,6 +68,13 @@ def run_extractor(
         config: Configuration parameters
         stop_event: Cancellation token, will be set when an interrupt signal is sent to the extractor process
     """
+
+    config.frontfill.enabled = bool(os.getenv("FRONTFILL_ENABLED", config.frontfill.enabled))
+    config.frontfill.lookback_min = int(os.getenv("FRONTFILL_LOOKBACK_MIN", config.frontfill.lookback_min))
+    config.backfill.enabled = bool(os.getenv("BACKFILL_ENABLED", config.backfill.enabled))
+    config.backfill.history_days = int(os.getenv("BACKFILL_HISTORY_DAYS", config.backfill.history_days))
+    config.sites = os.getenv("SITES", config.sites)
+
     logging.basicConfig(level=logging.INFO)
     logging.info("Starting Ice Cream Factory datapoints extractor")
     ice_cream_api = IceCreamFactoryAPI(base_url=config.api.url)

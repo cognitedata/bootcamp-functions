@@ -1,2 +1,13 @@
-- name: Frontfill every 10 minutes last hour of data
+- name: Frontfill every 10 minutes last hour of data (streamer)
   cron: "*/10 * * * *"
+  data:
+    backfill_enabled: False
+    frontfill_enabled: True
+    frontfill_lookback_min: 60
+
+- name: Backfill once a day for the last 30 days (gap filling)
+  cron: "0 0 * * *"
+  data:
+    backfill_enabled: True
+    backfill_history_days: 30
+    frontfill_enabled: False
