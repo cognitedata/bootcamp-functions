@@ -38,7 +38,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
     print(f"Input data of function: {data}")
 
     # Input data
-    lookback_minutes = data.get("lookback_minutes", 1440 * 7)
+    lookback_minutes = data.get("lookback_minutes", 1440)
     window_size = data.get("window_size_minutes", 60)
     data_set_external_id = data.get("data_set_external_id", "uc:001:oee:ds")
     sites = data.get("sites")
