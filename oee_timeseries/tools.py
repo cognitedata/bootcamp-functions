@@ -85,8 +85,8 @@ def discover_datapoints(client: CogniteClient, ts: Dict[str, TimeSeries], window
             outcome[k] = [
                 (_timestamp, next((values[i - 1][1] for i, v in enumerate(values) if v[0] > _timestamp), values[0][1]))
                 for _timestamp in range(
-                    floor(window[0].floor("minutes").shift(minutes=1).float_timestamp * 1000),
-                    floor(window[1].floor("minutes").shift(minutes=1).float_timestamp * 1000),
+                    floor(window[0].floor("minutes").float_timestamp * 1000),
+                    floor(window[1].floor("minutes").float_timestamp * 1000),
                     60 * 1000,
                 )
             ]
