@@ -1,5 +1,4 @@
 import logging
-import os
 
 from threading import Event
 from typing import List, Set
@@ -46,8 +45,6 @@ class Streamer:
 
         self.timeseries_list = timeseries_list
         self.timeseries_seen_set: Set[str] = set()
-
-        config.frontfill.lookback_min = int(os.getenv("FRONTFILL_LOOKBACK_MIN", config.frontfill.lookback_min))
 
     @retry(tries=10)
     def _extract_timeseries(self, timeseries: TimeSeries) -> None:
