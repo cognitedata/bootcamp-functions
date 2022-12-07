@@ -9,7 +9,7 @@ if __name__ == "__main__":
     # Import Environment Variables
     load_dotenv()
     client = get_client()
-    data = {"sites": ["Oslo", "Hannover", "Nuremberg"], "lookback_minutes": 60, "data_set_external_id": "uc:001:oee:ds"}
+    data = {"sites": ["Oslo", "Hannover", "Nuremberg"], "data_set_external_id": "uc:001:oee:ds"}
 
     # Delete Timeseries
     handle(client, data)
