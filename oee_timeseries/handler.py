@@ -17,7 +17,7 @@ from oee_timeseries.tools import get_timeseries_for_site
 CYCLE_TIME = 3
 
 
-def construct_payload(func: Callable[[int], float], lookback_minutes: int, now: Arrow):
+def get_payload(func: Callable[[int], float], lookback_minutes: int, now: Arrow):
     return [
         (_timestamp, func(i))
         for i, _timestamp in enumerate(
@@ -86,7 +86,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
                 [
                     {
                         "externalId": f"{item}:off_spec",
-                        "datapoints": construct_payload(lambda x, off=bad_items: off[x], lookback_minutes, now),
+                        "datapoints": get_payload(lambda x, off=bad_items: off[x], lookback_minutes, now),
                     }
                 ]
             )
@@ -95,7 +95,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
                 [
                     {
                         "externalId": f"{item}:quality",
-                        "datapoints": construct_payload(lambda x, q=quality: q[x], lookback_minutes, now),
+                        "datapoints": get_payload(lambda x, q=quality: q[x], lookback_minutes, now),
                     }
                 ]
             )
@@ -104,7 +104,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
                 [
                     {
                         "externalId": f"{item}:performance",
-                        "datapoints": construct_payload(
+                        "datapoints": get_payload(
                             lambda x, p=produced, up=uptime, r=ideal_rate: p[x] / up[x] / r[x]
                             if r[x] != 0 and up[x] != 0
                             else 0.0,
@@ -119,7 +119,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
                 [
                     {
                         "externalId": f"{item}:availability",
-                        "datapoints": construct_payload(
+                        "datapoints": get_payload(
                             lambda x, up=uptime, pl=planned_uptime: up[x] / pl[x] if pl[x] != 0 else 0.0,
                             lookback_minutes,
                             now,
@@ -132,7 +132,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
                 [
                     {
                         "externalId": f"{item}:oee",
-                        "datapoints": construct_payload(
+                        "datapoints": get_payload(
                             lambda x, q=quality, p=produced, r=ideal_rate, pl=planned_uptime: (q[x] * p[x] * r[x])
                             / pl[x]
                             if pl[x] != 0
