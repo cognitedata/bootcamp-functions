@@ -7,17 +7,15 @@ authors = ["hakon.treider@cognite.com"]
 [tool.poetry.dependencies]
 python = "~3.8"
 pytest-custom-exit-code = "^0, >=0.3"
-cognite-sdk= "*"
-python-dotenv = "^0.21.0"
-cognite-extractor-utils = "*"
+cognite-extractor-utils = "^3"
 pandas = "*"
 pydantic = "*"
 ujson = "*"
 retry = "*"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2"
-pre-commit = "^2.15"
+pytest = "*"
+pre-commit = "*"
 
 [tool.isort]
 profile = "black"
