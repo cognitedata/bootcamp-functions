@@ -20,7 +20,7 @@ def translate_to_a_name(text: str) -> str:
 
 
 def insert_datapoints(
-    client: CogniteClient, datapoints: List[Dict[str, Union[str, int, list]]], typ: str, data_set: DataSet
+        client: CogniteClient, datapoints: List[Dict[str, Union[str, int, list]]], typ: str, data_set: DataSet
 ) -> None:
     """
     Takes a list datapoints and uploads data CDF
@@ -77,16 +77,18 @@ def discover_datapoints(client: CogniteClient, ts: Dict[str, TimeSeries], window
         if k.endswith("status"):
             dp = client.datapoints.retrieve_latest(external_id=k, before=window[0].float_timestamp * 1000)
 
-            if len(v) == 0:
+            if len(dp.timestamp) == 0:
+                values = [(window[0].float_timestamp * 1000, 0.0)]
+            elif len(v) == 0:
                 values = list(zip(dp.timestamp, dp.value))
             else:
-                values = [*list(zip(dp.timestamp, dp.value)), *v]
+                values = list(zip(dp.timestamp, dp.value)) + v
 
             outcome[k] = [
                 (_timestamp, next((values[i - 1][1] for i, v in enumerate(values) if v[0] > _timestamp), values[0][1]))
                 for _timestamp in range(
                     floor(window[0].floor("minutes").float_timestamp * 1000),
-                    floor(window[1].floor("minutes").float_timestamp * 1000),
+                    floor(window[1].floor("minutes").shift(minutes=1).float_timestamp * 1000),
                     60 * 1000,
                 )
             ]
