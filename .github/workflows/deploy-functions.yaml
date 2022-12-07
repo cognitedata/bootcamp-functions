@@ -29,6 +29,7 @@ jobs:
         # Each environment should have a corresponding github environment with secrets.
         environment:
           - test
+          - prod
 
     environment: ${{ matrix.environment }}
 

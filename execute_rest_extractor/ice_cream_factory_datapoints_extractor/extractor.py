@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import random
 from concurrent.futures import as_completed
 from concurrent.futures import ThreadPoolExecutor
@@ -15,10 +16,11 @@ from cognite.extractorutils import Extractor
 from cognite.extractorutils.statestore import AbstractStateStore
 from cognite.extractorutils.uploader import TimeSeriesUploadQueue
 from cognite.extractorutils.util import ensure_time_series
-from ice_cream_factory_datapoints_extractor.config import IceCreamFactoryConfig
-from ice_cream_factory_datapoints_extractor.datapoints_backfiller import Backfiller
-from ice_cream_factory_datapoints_extractor.datapoints_streamer import Streamer
-from ice_cream_factory_datapoints_extractor.ice_cream_factory_api import IceCreamFactoryAPI
+
+from .config import IceCreamFactoryConfig
+from .datapoints_backfiller import Backfiller
+from .datapoints_streamer import Streamer
+from .ice_cream_factory_api import IceCreamFactoryAPI
 
 
 def timeseries_updates(
@@ -45,9 +47,8 @@ def timeseries_updates(
     try:
         oee_timeseries_dataset_id = client.data_sets.retrieve(external_id=config.oee_timeseries_dataset_ext_id).id
     except AttributeError:
-        logging.info("Could not find existing dataset, creating new")
-        ds = client.data_sets.create(DataSet(name="oee_timeseries", external_id=config.oee_timeseries_dataset_ext_id))
-        oee_timeseries_dataset_id = ds.id
+        logging.info("Could not find existing dataset. Have you run bootstrap cli?")
+        raise
 
     updated_timeseries_list: List[TimeSeries] = []
     for timeseries in timeseries_list:
@@ -70,6 +71,13 @@ def run_extractor(
         config: Configuration parameters
         stop_event: Cancellation token, will be set when an interrupt signal is sent to the extractor process
     """
+
+    config.frontfill.enabled = os.getenv("FRONTFILL_ENABLED", config.frontfill.enabled).lower() == "true"
+    config.frontfill.lookback_min = int(os.getenv("FRONTFILL_LOOKBACK_MIN", config.frontfill.lookback_min))
+    config.backfill.enabled = os.getenv("BACKFILL_ENABLED", config.backfill.enabled).lower() == "true"
+    config.backfill.history_days = int(os.getenv("BACKFILL_HISTORY_DAYS", config.backfill.history_days))
+    config.api.sites = os.getenv("SITES", config.api.sites)
+
     logging.basicConfig(level=logging.INFO)
     logging.info("Starting Ice Cream Factory datapoints extractor")
     ice_cream_api = IceCreamFactoryAPI(base_url=config.api.url)
@@ -109,7 +117,7 @@ def run_extractor(
     with clean_uploader_queue as queue:
         with ThreadPoolExecutor(thread_name_prefix="Data", max_workers=config.extractor.parallelism * 2) as executor:
             if config.backfill.enabled:
-                logging.info(f"Starting backfiller. Backfilling for {config.backfill.history_min} minutes of data")
+                logging.info(f"Starting backfiller. Back-filling for {config.backfill.history_days} days of data")
 
                 for i, batch in enumerate(chunks(timeseries_to_query, 10)):
                     worker = Backfiller(queue, stop_event, ice_cream_api, batch, config, states)

@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 
 import logging
 from threading import Event
@@ -9,9 +10,10 @@ import arrow
 from cognite.client.data_classes import TimeSeries
 from cognite.extractorutils.statestore import AbstractStateStore
 from cognite.extractorutils.uploader import TimeSeriesUploadQueue
-from ice_cream_factory_datapoints_extractor.config import IceCreamFactoryConfig
-from ice_cream_factory_datapoints_extractor.ice_cream_factory_api import IceCreamFactoryAPI
 from retry import retry
+
+from .config import IceCreamFactoryConfig
+from .ice_cream_factory_api import IceCreamFactoryAPI
 
 
 class Backfiller:
@@ -46,9 +48,13 @@ class Backfiller:
         self.logger = logging.getLogger(__name__)
         self.timeseries_list = timeseries_list
         self.states = states
-        self.stop_at = arrow.utcnow().shift(minutes=-config.backfill.history_min)
+        self.stop_at = arrow.utcnow().shift(days=-config.backfill.history_days)
         self.now_ts = arrow.utcnow()
         self.timeseries_seen_set: Set[str] = set()
+
+        if os.getenv("BACKFILL_SHIFT_NOW_TS_BACKWARDS_DAYS"):
+            self.now_ts = arrow.utcnow().shift(days=-int(os.getenv("BACKFILL_SHIFT_NOW_TS_BACKWARDS_DAYS")))
+            self.stop_at = self.now_ts.shift(days=-config.backfill.history_days)
 
     @retry(tries=10)
     def _extract_time_series(self, timeseries: TimeSeries) -> None:
@@ -60,7 +66,7 @@ class Backfiller:
         """
         low, high = self.states.get_state(timeseries.external_id)
         if not low:
-            low = self.stop_at.float_timestamp
+            low = self.now_ts.float_timestamp
         if not high:
             high = self.now_ts.float_timestamp
 
@@ -75,10 +81,10 @@ class Backfiller:
 
     def process(self, timeseries, start, end):
         logging.info(f"Getting historical data {timeseries.external_id} from {start} to {end}")
-        single_query_lookback = -min(60, self.config.backfill.history_min)
+        single_query_lookback = -min(2, self.config.backfill.history_days)
         while end > start and not self.stop.is_set():
 
-            from_time = end.shift(minutes=single_query_lookback)  # can query API for only 10 min of data
+            from_time = end.shift(days=single_query_lookback)  # can query API for only 10 min of data
 
             logging.info(f"\t{timeseries.external_id} from {from_time.isoformat()} to {end.isoformat()}")
 

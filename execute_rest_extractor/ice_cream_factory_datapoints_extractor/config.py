@@ -19,7 +19,7 @@ class ExtractorConfig:
     state_store: StateStoreConfig = StateStoreConfig(
         local=None,
         raw=RawStateStoreConfig(
-            database="src:005:oee:db:state", table="timeseries_datapoints_states", upload_interval=5
+            database="src:002:opcua:db:state", table="timeseries_datapoints_states", upload_interval=5
         ),
     )
 
@@ -31,7 +31,7 @@ class ExtractorConfig:
 @dataclass
 class BackFillConfig:
     enabled: bool
-    history_min: int
+    history_days: int
 
 
 @dataclass
