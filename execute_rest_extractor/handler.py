@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 from ice_cream_factory_datapoints_extractor import extractor

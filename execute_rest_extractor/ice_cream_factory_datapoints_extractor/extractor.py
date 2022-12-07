@@ -1,13 +1,16 @@
+from __future__ import annotations
+
 import argparse
 import logging
 import random
-
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import as_completed
+from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 from typing import List
 
 from cognite.client import CogniteClient
-from cognite.client.data_classes import DataSet, TimeSeries
+from cognite.client.data_classes import DataSet
+from cognite.client.data_classes import TimeSeries
 from cognite.extractorutils import Extractor
 from cognite.extractorutils.statestore import AbstractStateStore
 from cognite.extractorutils.uploader import TimeSeriesUploadQueue

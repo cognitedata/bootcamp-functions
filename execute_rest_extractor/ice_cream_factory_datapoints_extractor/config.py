@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import List
 
-from cognite.extractorutils.configtools import BaseConfig, RawStateStoreConfig, StateStoreConfig
+from cognite.extractorutils.configtools import BaseConfig
+from cognite.extractorutils.configtools import RawStateStoreConfig
+from cognite.extractorutils.configtools import StateStoreConfig
 
 
 @dataclass

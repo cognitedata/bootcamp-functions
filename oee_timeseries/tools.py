@@ -1,10 +1,17 @@
+from __future__ import annotations
+
 import re
 from math import floor
-from typing import List, Dict, Union, Tuple
+from typing import Dict
+from typing import List
+from typing import Tuple
+from typing import Union
 
 from arrow import Arrow
 from cognite.client import CogniteClient
-from cognite.client.data_classes import DataSet, TimeSeries
+from cognite.client.data_classes import DataSet
+from cognite.client.data_classes import TimeSeries
+
 
 def translate_to_a_name(text: str) -> str:
     output = re.split(":|_", text)  # split text at ":" or "_"
@@ -12,10 +19,9 @@ def translate_to_a_name(text: str) -> str:
     return " ".join(output)
 
 
-def insert_datapoints(client: CogniteClient,
-                      datapoints: List[Dict[str, Union[str, int, list]]],
-                      typ: str,
-                      data_set: DataSet) -> None:
+def insert_datapoints(
+    client: CogniteClient, datapoints: List[Dict[str, Union[str, int, list]]], typ: str, data_set: DataSet
+) -> None:
     """
     Takes a list datapoints and uploads data CDF
     """
@@ -60,7 +66,7 @@ def discover_datapoints(client: CogniteClient, ts: Dict[str, TimeSeries], window
         start=window[0].float_timestamp * 1000,
         end=window[1].float_timestamp * 1000,
         aggregates=["sum"],
-        granularity="1m"
+        granularity="1m",
     )
     for _r in data:
         outcome[_r.external_id] = sorted(zip(_r.timestamp, _r.sum), key=lambda x: x[0])
@@ -69,10 +75,7 @@ def discover_datapoints(client: CogniteClient, ts: Dict[str, TimeSeries], window
 
     for k, v in outcome.items():
         if k.endswith("status"):
-            dp = client.datapoints.retrieve_latest(
-                external_id=k,
-                before=window[0].float_timestamp * 1000
-            )
+            dp = client.datapoints.retrieve_latest(external_id=k, before=window[0].float_timestamp * 1000)
 
             if len(v) == 0:
                 values = list(zip(dp.timestamp, dp.value))
@@ -80,13 +83,12 @@ def discover_datapoints(client: CogniteClient, ts: Dict[str, TimeSeries], window
                 values = [*list(zip(dp.timestamp, dp.value)), *v]
 
             outcome[k] = [
-                (
-                    _timestamp,
-                    next((values[i - 1][1] for i, v in enumerate(values) if v[0] > _timestamp), values[0][1])
-                ) for _timestamp in range(
-                    floor(window[0].floor('minutes').shift(minutes=1).float_timestamp * 1000),
-                    floor(window[1].floor('minutes').shift(minutes=1).float_timestamp * 1000),
-                    60 * 1000)
+                (_timestamp, next((values[i - 1][1] for i, v in enumerate(values) if v[0] > _timestamp), values[0][1]))
+                for _timestamp in range(
+                    floor(window[0].floor("minutes").shift(minutes=1).float_timestamp * 1000),
+                    floor(window[1].floor("minutes").shift(minutes=1).float_timestamp * 1000),
+                    60 * 1000,
+                )
             ]
 
     return outcome
