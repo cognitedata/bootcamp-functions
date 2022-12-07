@@ -85,9 +85,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
             quality = np.divide(good_items, total_items, out=np.zeros_like(good_items), where=total_items != 0)
             uptime = np.convolve(uptime_points, np.ones(window_size, dtype=int), "valid")[1:]
             produced = np.convolve(total_items, np.ones(window_size, dtype=int), "valid")[1:]
-            ideal_rate = np.full(
-                lookback_minutes, window_size * (60.0 / 3.0)
-            )  # we know that ideal production should be 3 per sec
+            ideal_rate = np.full(lookback_minutes, 60.0 / 3.0)  # we know that ideal production should be 3 per sec
             planned_uptime = np.convolve(planned_uptime_points, np.ones(window_size, dtype=int), "valid")[1:]
 
             off_spec_dps.extend(
@@ -113,7 +111,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
                     {
                         "externalId": f"{item}:performance",
                         "datapoints": get_payload(
-                            lambda x, p=produced, up=uptime, r=ideal_rate: p[x] / up[x] / r[x]
+                            lambda x, p=produced, up=uptime, r=ideal_rate: (p[x] / up[x]) / r[x]
                             if r[x] != 0 and up[x] != 0
                             else 0.0,
                             lookback_minutes,
