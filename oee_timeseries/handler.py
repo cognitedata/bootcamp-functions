@@ -9,10 +9,10 @@ import arrow
 import numpy as np
 from arrow import Arrow
 from cognite.client import CogniteClient
+from tools import insert_datapoints
 
 from oee_timeseries.tools import discover_datapoints
 from oee_timeseries.tools import get_timeseries_for_site
-from tools import insert_datapoints
 
 CYCLE_TIME = 3
 
@@ -69,9 +69,9 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
             planned_uptime_points = np.array(discovered_points.get(f"{item}:planned_status"))[:, 1]
 
             if (
-                    len(total_items) != len(good_items)
-                    or len(total_items) != len(uptime_points)
-                    or len(total_items) != len(planned_uptime_points)
+                len(total_items) != len(good_items)
+                or len(total_items) != len(uptime_points)
+                or len(total_items) != len(planned_uptime_points)
             ):
                 raise RuntimeError(f"CDF returned different amount of aggregations for {window}")
 
@@ -140,7 +140,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
                         "externalId": f"{item}:oee",
                         "datapoints": get_payload(
                             lambda x, q=quality, p=produced, r=ideal_rate, pl=planned_uptime: (q[x] * p[x] * r[x])
-                                                                                              / pl[x]
+                            / pl[x]
                             if pl[x] != 0
                             else 0.0,
                             lookback_minutes,
