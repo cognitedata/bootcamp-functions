@@ -9,7 +9,6 @@ import arrow
 import numpy as np
 from arrow import Arrow
 from cognite.client import CogniteClient
-
 from tools import discover_datapoints
 from tools import get_timeseries_for_site
 from tools import insert_datapoints
@@ -54,14 +53,17 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
             for site in sites:
                 process_range = (_range[0].shift(minutes=-window_size), _range[1])
                 futures.append(
-                    executor.submit(process_site,
-                                    client,
-                                    data_set,
-                                    round((process_range[1] - process_range[0]).total_seconds() / 60) - window_size,
-                                    now,
-                                    site,
-                                    process_range,
-                                    window_size))
+                    executor.submit(
+                        process_site,
+                        client,
+                        data_set,
+                        round((process_range[1] - process_range[0]).total_seconds() / 60) - window_size,
+                        now,
+                        site,
+                        process_range,
+                        window_size,
+                    )
+                )
     for future in futures:
         future.result()
 
@@ -82,9 +84,9 @@ def process_site(client, data_set, lookback_minutes, now, site, window, window_s
         planned_uptime_points = np.array(discovered_points.get(f"{item}:planned_status"))[:, 1]
 
         if (
-                len(total_items) != len(good_items)
-                or len(total_items) != len(uptime_points)
-                or len(total_items) != len(planned_uptime_points)
+            len(total_items) != len(good_items)
+            or len(total_items) != len(uptime_points)
+            or len(total_items) != len(planned_uptime_points)
         ):
             raise RuntimeError(f"CDF returned different amount of aggregations for {window}")
 

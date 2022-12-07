@@ -20,7 +20,7 @@ def translate_to_a_name(text: str) -> str:
 
 
 def insert_datapoints(
-        client: CogniteClient, datapoints: List[Dict[str, Union[str, int, list]]], typ: str, data_set: DataSet
+    client: CogniteClient, datapoints: List[Dict[str, Union[str, int, list]]], typ: str, data_set: DataSet
 ) -> None:
     """
     Takes a list datapoints and uploads data CDF
