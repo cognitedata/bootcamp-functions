@@ -13,7 +13,6 @@
       - Rotterdam
       - London
     lookback_minutes: 60
-    window_size_minutes: 60
 
 - name: Run calculations once a day for 30 days history  (Oslo)
   cron: "0 1 * * *"
@@ -21,7 +20,6 @@
     sites:
       - Oslo
     lookback_minutes: 43200
-    window_size_minutes: 60
 
 - name: Run calculations once a day for 30 days history  (Nuremberg)
   cron: "0 1 * * *"
@@ -29,7 +27,6 @@
     sites:
       - Nuremberg
     lookback_minutes: 43200
-    window_size_minutes: 60
 
 - name: Run calculations once a day for 30 days history  (Marseille)
   cron: "0 1 * * *"
@@ -37,7 +34,6 @@
     sites:
       - Marseille
     lookback_minutes: 43200
-    window_size_minutes: 60
 
 - name: Run calculations once a day for 30 days history  (Houston)
   cron: "0 1 * * *"
@@ -45,7 +41,6 @@
     sites:
       - Houston
     lookback_minutes: 43200
-    window_size_minutes: 60
 
 - name: Run calculations once a day for 30 days history  (Sao Paulo)
   cron: "0 1 * * *"
@@ -53,7 +48,6 @@
     sites:
       - Sao Paulo
     lookback_minutes: 43200
-    window_size_minutes: 60
 
 
 - name: Run calculations once a day for 30 days history  (Kuala Lumpur)
@@ -62,7 +56,6 @@
     sites:
       - Kuala Lumpur
     lookback_minutes: 43200
-    window_size_minutes: 60
 
 
 - name: Run calculations once a day for 30 days history  (Chicago)
@@ -71,7 +64,6 @@
     sites:
       - Chicago
     lookback_minutes: 43200
-    window_size_minutes: 60
 
 
 - name: Run calculations once a day for 30 days history  (Rotterdam)
@@ -80,7 +72,6 @@
     sites:
       - Rotterdam
     lookback_minutes: 43200
-    window_size_minutes: 60
 
 
 - name: Run calculations once a day for 30 days history  (London)
@@ -89,4 +80,3 @@
     sites:
       - London
     lookback_minutes: 43200
-    window_size_minutes: 60

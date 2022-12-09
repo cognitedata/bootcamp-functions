@@ -19,7 +19,7 @@ from .ice_cream_factory_api import IceCreamFactoryAPI
 class Backfiller:
     """
     Query the Ice Cream Factory API for historical data for the given time frame and uploads datapoints to CDF clean.
-    Backfills from utc "now" back to limit set by config/data input in Cognite functions.
+    Backfills from utc "now" back to limit set by config / data input in Cognite functions.
 
     Args:
         upload_queue: Where to put data points

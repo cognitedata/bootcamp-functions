@@ -45,7 +45,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
     the_latest = get_state(client, db_name="src:002:opcua:db:state", table_name="timeseries_datapoints_states")
     now = arrow.get(the_latest, tzinfo="UTC").floor("minutes").shift(minutes=-10)  # -10 minutes as a safety margin
     data_set = client.data_sets.retrieve(external_id=data_set_external_id)
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    with ThreadPoolExecutor(max_workers=2) as executor:
         futures: List[Future] = []
         for _range in Arrow.span_range("week", now.shift(minutes=-lookback_minutes), now, exact=True):
             for site in sites:
