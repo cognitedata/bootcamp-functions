@@ -75,7 +75,7 @@ def discover_datapoints(client: CogniteClient, ts: Dict[str, TimeSeries], window
 
     for k, v in outcome.items():
         if k.endswith("status"):
-            dp = client.datapoints.retrieve_latest(external_id=k, before=window[0].float_timestamp * 1000)
+            dp = client.datapoints.retrieve_latest(external_id=k, before=window[0].float_timestamp * 1000 + 1)
 
             if len(dp.timestamp) == 0:
                 values = [(window[0].float_timestamp * 1000, 0.0)]
@@ -84,13 +84,19 @@ def discover_datapoints(client: CogniteClient, ts: Dict[str, TimeSeries], window
             else:
                 values = list(zip(dp.timestamp, dp.value)) + v
 
-            outcome[k] = [
-                (_timestamp, next((values[i - 1][1] for i, v in enumerate(values) if v[0] > _timestamp), values[0][1]))
-                for _timestamp in range(
-                    floor(window[0].floor("minutes").float_timestamp * 1000),
-                    floor(window[1].floor("minutes").shift(minutes=1).float_timestamp * 1000),
-                    60 * 1000,
-                )
-            ]
+            outcome[k] = sorted(
+                [
+                    (
+                        _timestamp,
+                        next((values[i - 1][1] for i, v in enumerate(values) if v[0] > _timestamp), values[0][1]),
+                    )
+                    for _timestamp in range(
+                        floor(window[0].floor("minutes").float_timestamp * 1000),
+                        floor(window[1].floor("minutes").shift(minutes=1).float_timestamp * 1000),
+                        60_000,
+                    )
+                ],
+                key=lambda x: x[0],
+            )
 
     return outcome

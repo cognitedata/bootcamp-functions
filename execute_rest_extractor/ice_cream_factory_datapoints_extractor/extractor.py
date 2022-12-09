@@ -72,9 +72,9 @@ def run_extractor(
         stop_event: Cancellation token, will be set when an interrupt signal is sent to the extractor process
     """
 
-    config.frontfill.enabled = os.getenv("FRONTFILL_ENABLED", config.frontfill.enabled)
+    config.frontfill.enabled = str(os.getenv("FRONTFILL_ENABLED", config.frontfill.enabled)).lower() == "true"
     config.frontfill.lookback_min = int(os.getenv("FRONTFILL_LOOKBACK_MIN", config.frontfill.lookback_min))
-    config.backfill.enabled = os.getenv("BACKFILL_ENABLED", config.backfill.enabled)
+    config.backfill.enabled = str(os.getenv("BACKFILL_ENABLED", config.backfill.enabled)).lower() == "true"
     config.backfill.history_days = int(os.getenv("BACKFILL_HISTORY_DAYS", config.backfill.history_days))
     if os.getenv("SITES"):
         config.api.sites = ast.literal_eval(os.getenv("SITES"))
