@@ -17,7 +17,7 @@ if __name__ == "__main__":
     data = {"backfill_enabled": "True",
             "backfill_history_days": "10",
             "backfill_shift_now_ts_backwards_days": "60",
-            "sites": "['Oslo', 'Hannover']"}
+            "sites": "['Oslo', 'Hannover', 'Chicago']"}
     """
     data = {"frontfill_enabled": "True", "frontfill_lookback_min": "60", "backfill_enabled": "False"}
     handle(secrets, data)
