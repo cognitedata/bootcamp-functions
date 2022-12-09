@@ -1,6 +1,6 @@
 # Configuration file for dev environment. Will apply to all functions, but will be overwritten by
 # configurations files in specific function folder.
-data_set_id: 516567027750378
+data_set_id: <DATASET ID>
 tenant_id: 16e3985b-ebe8-4e24-9da4-933e21a9fc81
-cdf_cluster: greenfield
-cdf_project: bootcamp-14-test
+cdf_cluster: westeurope-1
+cdf_project: cdf-bootcamp-<n>-test
