@@ -84,7 +84,7 @@ jobs:
           #  or return a default json with a "skipDeploy" value in the array
           if [ $(cat $tmp_file | wc -l) -gt 1 ]; then
             json=$(yq -o=json -I=0 $tmp_file)
-            folder_array=$(yq -o=json -I=0 ".folder" $tmp_file)
+            folder_array=$(yq 'unique' -o=json -I=0 ".folder" $tmp_file)
             echo "matrix=${json}" >> $GITHUB_OUTPUT
             echo "folders=${folder_array}" >> $GITHUB_OUTPUT
           else
