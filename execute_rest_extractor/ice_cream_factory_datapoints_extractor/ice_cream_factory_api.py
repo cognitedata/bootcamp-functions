@@ -1,8 +1,4 @@
-from __future__ import annotations
-
-from typing import Dict
-from typing import List
-from typing import Union
+from typing import Dict, List, Union
 
 import ujson as ujson
 from cognite.client.data_classes import TimeSeries

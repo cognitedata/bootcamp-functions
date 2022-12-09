@@ -60,7 +60,7 @@ def timeseries_updates(
 
 
 def run_extractor(
-    cognite: CogniteClient, states: AbstractStateStore, config: IceCreamFactoryConfig, stop_event: Event
+        cognite: CogniteClient, states: AbstractStateStore, config: IceCreamFactoryConfig, stop_event: Event
 ) -> None:
     """
     Run extractor and extract datapoints for timeseries for sites given in config.
@@ -72,9 +72,9 @@ def run_extractor(
         stop_event: Cancellation token, will be set when an interrupt signal is sent to the extractor process
     """
 
-    config.frontfill.enabled = os.getenv("FRONTFILL_ENABLED", config.frontfill.enabled)
+    config.frontfill.enabled = os.getenv("FRONTFILL_ENABLED", config.frontfill.enabled).lower() == "true"
     config.frontfill.lookback_min = int(os.getenv("FRONTFILL_LOOKBACK_MIN", config.frontfill.lookback_min))
-    config.backfill.enabled = os.getenv("BACKFILL_ENABLED", config.backfill.enabled)
+    config.backfill.enabled = os.getenv("BACKFILL_ENABLED", config.backfill.enabled).lower() == "true"
     config.backfill.history_days = int(os.getenv("BACKFILL_HISTORY_DAYS", config.backfill.history_days))
     if os.getenv("SITES"):
         config.api.sites = ast.literal_eval(os.getenv("SITES"))
@@ -145,10 +145,8 @@ def run_extractor(
         states.set_state(fake_state_ext_id, low + 1, None)
 
         if low % random.randint(15, 20) == 0:
-            raise NotImplementedError(
-                "This is a synthetic error. Data was extracted successfully, but monitoring "
-                "and extraction pipelines should be triggered for DEMO purposes"
-            )
+            raise NotImplementedError("This is a synthetic error. Data was extracted successfully, but monitoring "
+                                      "and extraction pipelines should be triggered for DEMO purposes")
 
 
 def main(config_file_path: str = "extractor_config.yaml") -> None:

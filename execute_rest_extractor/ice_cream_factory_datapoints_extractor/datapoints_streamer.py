@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import logging
 from threading import Event
 from typing import List
