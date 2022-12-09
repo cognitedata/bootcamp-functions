@@ -88,7 +88,7 @@ def process_site(client, data_set, lookback_minutes, site, window):
 
         bad_items = np.subtract(total_items, good_items)
         quality = np.divide(good_items, total_items, out=np.zeros_like(good_items), where=total_items != 0)
-        ideal_rate = np.full(lookback_minutes, 60.0 / 3.0)  # we know that ideal production should be 3 per sec
+        ideal_rate = np.full(lookback_minutes, 60.0 / 3.0)  # we know that ideal production should be 3 per sec.
 
         off_spec_dps.extend(
             [
