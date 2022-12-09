@@ -24,4 +24,4 @@ def handle(secrets, data):
         if data.get("backfill_shift_now_ts_backwards_days"):
             os.environ["BACKFILL_SHIFT_NOW_TS_BACKWARDS_DAYS"] = data.get("backfill_shift_now_ts_backwards_days")
     extractor.main()
-    print("running rest extractor done.)
+    print("running rest extractor done.")
