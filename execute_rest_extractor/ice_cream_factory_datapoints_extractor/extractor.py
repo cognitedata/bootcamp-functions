@@ -60,7 +60,7 @@ def timeseries_updates(
 
 
 def run_extractor(
-        cognite: CogniteClient, states: AbstractStateStore, config: IceCreamFactoryConfig, stop_event: Event
+    cognite: CogniteClient, states: AbstractStateStore, config: IceCreamFactoryConfig, stop_event: Event
 ) -> None:
     """
     Run extractor and extract datapoints for timeseries for sites given in config.
@@ -145,8 +145,10 @@ def run_extractor(
         states.set_state(fake_state_ext_id, low + 1, None)
 
         if low % random.randint(15, 20) == 0:
-            raise NotImplementedError("This is a synthetic error. Data was extracted successfully, but monitoring "
-                                      "and extraction pipelines should be triggered for DEMO purposes")
+            raise NotImplementedError(
+                "This is a synthetic error. Data was extracted successfully, but monitoring "
+                "and extraction pipelines should be triggered for DEMO purposes"
+            )
 
 
 def main(config_file_path: str = "extractor_config.yaml") -> None:

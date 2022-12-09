@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor, Future
+from concurrent.futures import Future
+from concurrent.futures import ThreadPoolExecutor
 from math import floor
-from typing import Any, Tuple, List
+from typing import Any
 from typing import Dict
+from typing import List
+from typing import Tuple
 
 import arrow
 import numpy as np
 from arrow import Arrow
 from cognite.client import CogniteClient
-
 from tools import discover_datapoints
 from tools import get_timeseries_for_site
 from tools import insert_datapoints
@@ -21,11 +23,7 @@ def get_payload(collection: np.array, window: Tuple[Arrow, Arrow]):
     return [
         (_timestamp, collection[i])
         for i, _timestamp in enumerate(
-            range(
-                floor(window[0].float_timestamp * 1000),
-                floor(window[1].float_timestamp * 1000),
-                60_000
-            )
+            range(floor(window[0].float_timestamp * 1000), floor(window[1].float_timestamp * 1000), 60_000)
         )
     ]
 
@@ -45,7 +43,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
     # "now" variable specifies the time upto which the OEE numbers will be calculated
     # We want to balance the data freshness here
     the_latest = get_state(client, db_name="src:002:opcua:db:state", table_name="timeseries_datapoints_states")
-    now = arrow.get(the_latest, tzinfo='UTC').floor("minutes").shift(minutes=-10)  # -10 minutes as a safety margin
+    now = arrow.get(the_latest, tzinfo="UTC").floor("minutes").shift(minutes=-10)  # -10 minutes as a safety margin
     data_set = client.data_sets.retrieve(external_id=data_set_external_id)
     with ThreadPoolExecutor(max_workers=1) as executor:
         futures: List[Future] = []
@@ -59,7 +57,8 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
                         round((_range[1] - _range[0]).total_seconds() / 60),
                         site,
                         _range,
-                    ))
+                    )
+                )
 
         for f in futures:
             f.result()
@@ -81,9 +80,9 @@ def process_site(client, data_set, lookback_minutes, site, window):
         planned_uptime = np.array(discovered_points.get(f"{item}:planned_status"))[:, 1]
 
         if (
-                len(total_items) != len(good_items)
-                or len(total_items) != len(uptime)
-                or len(total_items) != len(planned_uptime)
+            len(total_items) != len(good_items)
+            or len(total_items) != len(uptime)
+            or len(total_items) != len(planned_uptime)
         ):
             raise RuntimeError(f"CDF returned different amount of aggregations for {window}")
 

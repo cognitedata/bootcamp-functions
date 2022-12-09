@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import functools
 import re
 from math import floor
 from typing import Dict
@@ -8,7 +7,6 @@ from typing import List
 from typing import Tuple
 from typing import Union
 
-import arrow
 from arrow import Arrow
 from cognite.client import CogniteClient
 from cognite.client.data_classes import DataSet
@@ -86,16 +84,19 @@ def discover_datapoints(client: CogniteClient, ts: Dict[str, TimeSeries], window
             else:
                 values = list(zip(dp.timestamp, dp.value)) + v
 
-            outcome[k] = sorted([
-                (
-                    _timestamp,
-                    next((values[i - 1][1] for i, v in enumerate(values) if v[0] > _timestamp), values[0][1])
-                )
-                for _timestamp in range(
-                    floor(window[0].floor("minutes").float_timestamp * 1000),
-                    floor(window[1].floor("minutes").shift(minutes=1).float_timestamp * 1000),
-                    60_000,
-                )
-            ], key=lambda x: x[0])
+            outcome[k] = sorted(
+                [
+                    (
+                        _timestamp,
+                        next((values[i - 1][1] for i, v in enumerate(values) if v[0] > _timestamp), values[0][1]),
+                    )
+                    for _timestamp in range(
+                        floor(window[0].floor("minutes").float_timestamp * 1000),
+                        floor(window[1].floor("minutes").shift(minutes=1).float_timestamp * 1000),
+                        60_000,
+                    )
+                ],
+                key=lambda x: x[0],
+            )
 
     return outcome
