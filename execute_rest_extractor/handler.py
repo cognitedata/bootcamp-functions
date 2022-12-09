@@ -6,7 +6,7 @@ from ice_cream_factory_datapoints_extractor import extractor
 
 
 def handle(secrets, data):
-    print("running rest extractor")
+    print("running rest extractor.")
     if secrets:
         os.environ["COGNITE_CLIENT_ID"] = secrets.get("client-id")
         os.environ["COGNITE_CLIENT_SECRET"] = secrets.get("client-secret")
@@ -24,4 +24,4 @@ def handle(secrets, data):
         if data.get("backfill_shift_now_ts_backwards_days"):
             os.environ["BACKFILL_SHIFT_NOW_TS_BACKWARDS_DAYS"] = data.get("backfill_shift_now_ts_backwards_days")
     extractor.main()
-    print("running rest extractor done")
+    print("running rest extractor done.)
