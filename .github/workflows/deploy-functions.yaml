@@ -2,7 +2,7 @@
 name: Deploy Functions to CDF project using OIDC
 on:
   push:
-    branches: [master]
+    branches: [main]
 
 jobs:
   generate-matrix:
