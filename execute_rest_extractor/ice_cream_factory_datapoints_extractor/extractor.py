@@ -28,7 +28,7 @@ from .ice_cream_factory_api import IceCreamFactoryAPI
 
 @wrapt.patch_function_wrapper(dotenv.main, "find_dotenv")
 def _find_dotenv(*args, **kwargs):
-    if "wwwroot" in Path(__file__).absolute():
+    if "wwwroot" in str(Path(__file__).absolute()):
         return ""
     return ".env"
 
