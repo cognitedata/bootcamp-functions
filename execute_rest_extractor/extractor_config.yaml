@@ -41,7 +41,7 @@ extractor:
 
 backfill:
   enabled: False
-  history-days: 30
+  history-days: 5
 
 frontfill:
   enabled: True
