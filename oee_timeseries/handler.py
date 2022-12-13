@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from concurrent.futures import Future
 from concurrent.futures import ThreadPoolExecutor
 from math import floor
@@ -12,6 +13,8 @@ import arrow
 import numpy as np
 from arrow import Arrow
 from cognite.client import CogniteClient
+from retry import retry
+
 from tools import discover_datapoints
 from tools import get_timeseries_for_site
 from tools import insert_datapoints
@@ -64,6 +67,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
             f.result()
 
 
+@retry(tries=5, jitter=random.randint(5, 10), delay=random.randint(5, 15))
 def process_site(client, data_set, lookback_minutes, site, window):
     discovered_ts = get_timeseries_for_site(client, site)
     discovered_points = discover_datapoints(client, discovered_ts, window)
@@ -84,11 +88,7 @@ def process_site(client, data_set, lookback_minutes, site, window):
             or len(total_items) != len(uptime)
             or len(total_items) != len(planned_uptime)
         ):
-            raise RuntimeError(
-                f"{item}: CDF returned different amount of aggregations for {window}. "
-                f"count={len(total_items)}; good={len(good_items)}; "
-                f"status={len(uptime)}; planned_status={len(planned_uptime)}"
-            )
+            raise RuntimeError(f"CDF returned different amount of aggregations for {window}")
 
         bad_items = np.subtract(total_items, good_items)
         quality = np.divide(good_items, total_items, out=np.zeros_like(good_items), where=total_items != 0)
