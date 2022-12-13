@@ -14,7 +14,6 @@ import numpy as np
 from arrow import Arrow
 from cognite.client import CogniteClient
 from retry import retry
-
 from tools import discover_datapoints
 from tools import get_timeseries_for_site
 from tools import insert_datapoints
