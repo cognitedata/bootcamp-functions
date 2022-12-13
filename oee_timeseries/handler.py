@@ -45,9 +45,9 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
     the_latest = get_state(client, db_name="src:002:opcua:db:state", table_name="timeseries_datapoints_states")
     now = arrow.get(the_latest, tzinfo="UTC").floor("minutes").shift(minutes=-10)  # -10 minutes as a safety margin
     data_set = client.data_sets.retrieve(external_id=data_set_external_id)
-    with ThreadPoolExecutor(max_workers=2) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         futures: List[Future] = []
-        for _range in Arrow.span_range("week", now.shift(minutes=-lookback_minutes), now, exact=True):
+        for _range in Arrow.span_range("day", now.shift(minutes=-lookback_minutes), now, exact=True):
             for site in sites:
                 futures.append(
                     executor.submit(
@@ -84,7 +84,9 @@ def process_site(client, data_set, lookback_minutes, site, window):
             or len(total_items) != len(uptime)
             or len(total_items) != len(planned_uptime)
         ):
-            raise RuntimeError(f"CDF returned different amount of aggregations for {window}")
+            raise RuntimeError(f"{item}: CDF returned different amount of aggregations for {window}. "
+                               f"count={len(total_items)}; good={len(good_items)}; "
+                               f"status={len(uptime)}; planned_status={len(planned_uptime)}")
 
         bad_items = np.subtract(total_items, good_items)
         quality = np.divide(good_items, total_items, out=np.zeros_like(good_items), where=total_items != 0)
