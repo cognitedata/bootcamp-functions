@@ -84,9 +84,11 @@ def process_site(client, data_set, lookback_minutes, site, window):
             or len(total_items) != len(uptime)
             or len(total_items) != len(planned_uptime)
         ):
-            raise RuntimeError(f"{item}: CDF returned different amount of aggregations for {window}. "
-                               f"count={len(total_items)}; good={len(good_items)}; "
-                               f"status={len(uptime)}; planned_status={len(planned_uptime)}")
+            raise RuntimeError(
+                f"{item}: CDF returned different amount of aggregations for {window}. "
+                f"count={len(total_items)}; good={len(good_items)}; "
+                f"status={len(uptime)}; planned_status={len(planned_uptime)}"
+            )
 
         bad_items = np.subtract(total_items, good_items)
         quality = np.divide(good_items, total_items, out=np.zeros_like(good_items), where=total_items != 0)
