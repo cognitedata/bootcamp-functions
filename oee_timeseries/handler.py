@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from concurrent.futures import Future
 from concurrent.futures import ThreadPoolExecutor
 from math import floor
@@ -12,6 +13,7 @@ import arrow
 import numpy as np
 from arrow import Arrow
 from cognite.client import CogniteClient
+from retry import retry
 from tools import discover_datapoints
 from tools import get_timeseries_for_site
 from tools import insert_datapoints
@@ -45,9 +47,9 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
     the_latest = get_state(client, db_name="src:002:opcua:db:state", table_name="timeseries_datapoints_states")
     now = arrow.get(the_latest, tzinfo="UTC").floor("minutes").shift(minutes=-10)  # -10 minutes as a safety margin
     data_set = client.data_sets.retrieve(external_id=data_set_external_id)
-    with ThreadPoolExecutor(max_workers=2) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         futures: List[Future] = []
-        for _range in Arrow.span_range("week", now.shift(minutes=-lookback_minutes), now, exact=True):
+        for _range in Arrow.span_range("day", now.shift(minutes=-lookback_minutes), now, exact=True):
             for site in sites:
                 futures.append(
                     executor.submit(
@@ -64,6 +66,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
             f.result()
 
 
+@retry(tries=5, jitter=random.randint(5, 10), delay=random.randint(5, 15))
 def process_site(client, data_set, lookback_minutes, site, window):
     discovered_ts = get_timeseries_for_site(client, site)
     discovered_points = discover_datapoints(client, discovered_ts, window)
