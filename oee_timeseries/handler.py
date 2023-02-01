@@ -92,7 +92,8 @@ def process_site(client, data_set, lookback_minutes, site, window):
             # Fix: run backfill / frontfill to make sure that “sensor” data is in place before you run OEE
             raise RuntimeError(
                 f"""{item}: Unable to retrieve datapoints for all required OEE timeseries (count, good, status, planned_status)
-                between {window}. Ensure that data is available for the time range specified.""")
+                between {window}. Ensure that data is available for the time range specified."""
+            )
 
         bad_items = np.subtract(total_items, good_items)
         quality = np.divide(good_items, total_items, out=np.zeros_like(good_items), where=total_items != 0)
