@@ -16,6 +16,7 @@ jobs:
       trigger_deploy_all_folders: >-
         (
         "common"
+        ".github"
         )
 
   deploy:
