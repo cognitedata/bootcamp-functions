@@ -87,7 +87,12 @@ def process_site(client, data_set, lookback_minutes, site, window):
             or len(total_items) != len(uptime)
             or len(total_items) != len(planned_uptime)
         ):
-            raise RuntimeError(f"CDF returned different amount of aggregations for {window}")
+            # We expect ALL dependent timeseries to have the exact same number of datapoints
+            # for the specified time range for the calculation to execute.
+            # Fix: run backfill / frontfill to make sure that “sensor” data is in place before you run OEE
+            raise RuntimeError(
+                f"""{item}: Unable to retrieve datapoints for all required OEE timeseries (count, good, status, planned_status)
+                between {window}. Ensure that data is available for the time range specified.""")
 
         bad_items = np.subtract(total_items, good_items)
         quality = np.divide(good_items, total_items, out=np.zeros_like(good_items), where=total_items != 0)
