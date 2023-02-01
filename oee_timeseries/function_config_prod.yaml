@@ -1,0 +1,7 @@
+# Note: Parameters can be hardcoded directly in 'deploy-functions.yaml'
+# if you do not need to vary them between your functions!
+description: "Function to calculate OEE"
+owner: CDF Bootcamp Team
+cpu: 1.0
+memory: 1.5
+data_set_id: <DATA SET ID FOR oee_timeseries in PROD environment>
