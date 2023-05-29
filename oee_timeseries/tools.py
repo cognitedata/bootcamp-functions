@@ -46,7 +46,7 @@ def insert_datapoints(
         print(f"Created missing {len(timeseries_list)} timeserie(s).")
 
     # Insert datapoints
-    client.datapoints.insert_multiple(datapoints)
+    client.time_series.data.insert_multiple(datapoints)
     print(f"Inserted datapoints for type {typ}. For {str(len(datapoints))} timeseries.")
 
 
@@ -61,7 +61,7 @@ def get_timeseries_for_site(client: CogniteClient, site: str):
 
 def discover_datapoints(client: CogniteClient, ts: Dict[str, TimeSeries], window: Tuple[Arrow, Arrow]):
     outcome = {}
-    data = client.datapoints.retrieve(
+    data = client.time_series.data.retrieve(
         external_id=list(ts.keys()),
         start=window[0].float_timestamp * 1000,
         end=window[1].float_timestamp * 1000,
@@ -75,7 +75,7 @@ def discover_datapoints(client: CogniteClient, ts: Dict[str, TimeSeries], window
 
     for k, v in outcome.items():
         if k.endswith("status"):
-            dp = client.datapoints.retrieve_latest(external_id=k, before=window[0].float_timestamp * 1000 + 1)
+            dp = client.time_series.data.retrieve_latest(external_id=k, before=window[0].float_timestamp * 1000 + 1)
 
             if len(dp.timestamp) == 0:
                 values = [(window[0].float_timestamp * 1000, 0.0)]
