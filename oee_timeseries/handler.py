@@ -43,7 +43,7 @@ def handle(client: CogniteClient, data: Dict[str, Any]) -> None:
     data_set_external_id = data.get("data_set_external_id", "uc:001:oee:ds")
     sites = data.get("sites")
     # "now" variable specifies the time upto which the OEE numbers will be calculated
-    # We want to balance the data freshness here
+    # We want to balance the data freshness here 
     the_latest = get_state(client, db_name="src:002:opcua:db:state", table_name="timeseries_datapoints_states")
     now = arrow.get(the_latest, tzinfo="UTC").floor("minutes").shift(minutes=-10)  # -10 minutes as a safety margin
     data_set = client.data_sets.retrieve(external_id=data_set_external_id)
